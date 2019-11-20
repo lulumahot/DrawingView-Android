@@ -54,7 +54,7 @@ public class DrawingView extends View {
     paint.setStrokeCap(Paint.Cap.ROUND);
     paint.setStrokeWidth(penSize);
     drawMode = true;
-    paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SCREEN));
+    paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER));
   }
 
   @Override protected void onSizeChanged(int w, int h, int oldw, int oldh) {
@@ -96,7 +96,7 @@ public class DrawingView extends View {
     canvas.drawPath(path, paint);
     path.reset();
     if (drawMode) {
-      paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SCREEN));
+      paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER));
     } else {
       paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
     }
@@ -110,7 +110,7 @@ public class DrawingView extends View {
         if (!drawMode) {
           paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         } else {
-          paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SCREEN));
+          paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER));
         }
         touchStart(x, y);
         invalidate();
@@ -143,7 +143,7 @@ public class DrawingView extends View {
     paint.setStrokeJoin(Paint.Join.ROUND);
     paint.setStrokeCap(Paint.Cap.ROUND);
     paint.setStrokeWidth(penSize);
-    paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SCREEN));
+    paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER));
   }
 
   public void initializeEraser() {
