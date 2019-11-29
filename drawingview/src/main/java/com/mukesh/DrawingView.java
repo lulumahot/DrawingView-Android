@@ -16,12 +16,14 @@ import android.view.View;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class DrawingView extends View {
   private static final float TOUCH_TOLERANCE = 4;
   private Bitmap bitmap;
   private Canvas canvas;
-  private Path path;
+  private ArrayList<Path> pathList;
+  private ArrayList<Paint> paintList;
   private Paint bitmapPaint;
   private Paint paint;
   private boolean drawMode;
@@ -43,7 +45,8 @@ public class DrawingView extends View {
   }
 
   private void init() {
-    path = new Path();
+    pathList = new ArrayList<>();
+    paintList = new ArrayList<>();
     bitmapPaint = new Paint(Paint.DITHER_FLAG);
     paint = new Paint();
     paint.setAntiAlias(true);
@@ -69,14 +72,19 @@ public class DrawingView extends View {
   @Override protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
     canvas.drawBitmap(bitmap, 0, 0, bitmapPaint);
-    canvas.drawPath(path, paint);
+    if(!pathList.isEmpty()) {
+      canvas.drawPath(pathList.get(pathList.size() - 1), paintList.get(paintList.size() - 1));
+    }
   }
 
   private void touchStart(float x, float y) {
+    Path path = new Path();
     path.reset();
     path.moveTo(x, y);
     this.x = x;
     this.y = y;
+    pathList.add(path);
+    paintList.add(new Paint(paint));
     canvas.drawPath(path, paint);
   }
 
@@ -84,17 +92,16 @@ public class DrawingView extends View {
     float dx = Math.abs(x - this.x);
     float dy = Math.abs(y - this.y);
     if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-      path.quadTo(this.x, this.y, (x + this.x) / 2, (y + this.y) / 2);
+      pathList.get(pathList.size() -1).quadTo(this.x, this.y, (x + this.x) / 2, (y + this.y) / 2);
       this.x = x;
       this.y = y;
     }
-    canvas.drawPath(path, paint);
+    canvas.drawPath(pathList.get(pathList.size() -1), paintList.get(paintList.size() - 1));
   }
 
   private void touchUp() {
-    path.lineTo(x, y);
-    canvas.drawPath(path, paint);
-    path.reset();
+    pathList.get(pathList.size() -1).lineTo(x, y);
+    canvas.drawPath(pathList.get(pathList.size() -1), paintList.get(paintList.size() - 1));
     if (drawMode) {
       paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER));
     } else {
@@ -118,11 +125,11 @@ public class DrawingView extends View {
       case MotionEvent.ACTION_MOVE:
         touchMove(x, y);
         if (!drawMode) {
-          path.lineTo(this.x, this.y);
-          path.reset();
-          path.moveTo(x, y);
+          pathList.get(pathList.size() -1).lineTo(this.x, this.y);
+          pathList.get(pathList.size() -1).reset();
+          pathList.get(pathList.size() -1).moveTo(x, y);
         }
-        canvas.drawPath(path, paint);
+        canvas.drawPath(pathList.get(pathList.size() -1), paintList.get(paintList.size() - 1));
         invalidate();
         break;
       case MotionEvent.ACTION_UP:
@@ -156,6 +163,17 @@ public class DrawingView extends View {
 
   public void clear() {
     canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+    invalidate();
+  }
+
+  public void undo(){
+    canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+    if(!pathList.isEmpty())
+      pathList.remove(pathList.size() - 1);
+      paintList.remove( paintList.size() - 1);
+    for(int i = 0 ; i < pathList.size() ; i++){
+      canvas.drawPath(pathList.get(i), new Paint(paintList.get(i)));
+    }
     invalidate();
   }
 
