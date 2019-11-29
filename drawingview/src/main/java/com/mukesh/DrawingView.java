@@ -30,6 +30,7 @@ public class DrawingView extends View {
   private float x, y;
   private float penSize = 10;
   private float eraserSize = 10;
+  private Boolean active = true;
 
   public DrawingView(Context c) {
     this(c, null);
@@ -72,7 +73,7 @@ public class DrawingView extends View {
   @Override protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
     canvas.drawBitmap(bitmap, 0, 0, bitmapPaint);
-    if(!pathList.isEmpty()) {
+    if(!pathList.isEmpty() && !paintList.isEmpty()) {
       canvas.drawPath(pathList.get(pathList.size() - 1), paintList.get(paintList.size() - 1));
     }
   }
@@ -110,6 +111,9 @@ public class DrawingView extends View {
   }
 
   @Override public boolean onTouchEvent(MotionEvent event) {
+    if(!active){
+      return false;
+    }
     float x = event.getX();
     float y = event.getY();
     switch (event.getAction()) {
@@ -166,13 +170,18 @@ public class DrawingView extends View {
     invalidate();
   }
 
+  public void setActive(Boolean a){
+    active = a;
+  }
+
   public void undo(){
     canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-    if(!pathList.isEmpty())
+    if(!pathList.isEmpty()  && !paintList.isEmpty()) {
       pathList.remove(pathList.size() - 1);
-      paintList.remove( paintList.size() - 1);
-    for(int i = 0 ; i < pathList.size() ; i++){
-      canvas.drawPath(pathList.get(i), new Paint(paintList.get(i)));
+      paintList.remove(paintList.size() - 1);
+      for (int i = 0; i < pathList.size(); i++) {
+        canvas.drawPath(pathList.get(i), new Paint(paintList.get(i)));
+      }
     }
     invalidate();
   }
